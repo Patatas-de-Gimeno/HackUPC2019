@@ -2,8 +2,6 @@ package com.example.hackupc;
 
 
 import android.Manifest;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -35,7 +33,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 
 import com.android.volley.Request;
@@ -122,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
             imageView.bringToFront();
 
             authorizationImgur();
+            uploadImg(bitmap);
 
             //send image to API
             //get result
@@ -130,14 +128,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void uploadImg(Bitmap bitmap) {
+        String clientId = "de252006156e143";
+        RequestQueue mQueue = Volley.newRequestQueue(this);
+        Authentication auth = new Authentication("https://api.imgur.com/3/upload");
+        auth.putHead("Authorization", "Client-ID {{de252006156e143}}");
+        auth.putHead("image", bitmap);
+        auth.putHead("type", "file");
+        auth.putHead("name", "01.jpg");
+        auth.putHead("name", "Prova 01");
+        JsonObjectRequest request = auth.request(Request.Method.POST, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                System.out.println(response.toString());
+            }
+        });
+        mQueue.add(request);
+
+    }
+
     private void authorizationImgur() {
         RequestQueue mQueue = Volley.newRequestQueue(this);
         String endpoint = "https://api.imgur.com/oauth2/authorize";
-        String clientId = "5491201f230a7da";
+        String clientId = "de252006156e143";
+        String acces_token = "358d129d7bcb4ff49575155aed0153c7d999c93e";
+        String pin = "c7e78d71cc";
         Authentication auth = new Authentication(endpoint);
-        auth.putHead("response_type", "token");
+        auth.putHead("response_type", acces_token);
         auth.putHead("client_id", clientId);
-        JsonObjectRequest request = auth.request(Request.Method.POST, new Response.Listener<JSONObject>() {
+        JsonObjectRequest request    = auth.request(Request.Method.POST, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 System.out.println("AUTHENTICATIOOOOOOOOOOOOOOOOOOOOOOOON");
@@ -172,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
 
                         int length = imageJArray.length();
 
-                        LinearLayout lay = (LinearLayout) findViewById(R.id.buttonslayouts);
+                        LinearLayout lay = findViewById(R.id.buttonslayouts);
                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(CoordinatorLayout.LayoutParams.WRAP_CONTENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT);
                         Display display = getWindowManager().getDefaultDisplay();
                         Point size = new Point();

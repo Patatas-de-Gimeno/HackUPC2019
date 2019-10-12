@@ -14,14 +14,14 @@ import javax.xml.transform.ErrorListener;
 
 public class Authentication {
     public String endpoint;
-    HashMap<String, String> hashM;
+    HashMap<String, Object> hashM;
 
     public Authentication(String endpoint) {
         this.endpoint = endpoint;
         this.hashM = new HashMap<>();
     }
 
-    public void putHead(String key, String value) {
+    public void putHead(String key, Object value) {
         this.hashM.put(key, value);
     }
 
