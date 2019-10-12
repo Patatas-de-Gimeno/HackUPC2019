@@ -1,9 +1,15 @@
 package com.example.hackupc;
 
 
+import android.Manifest;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 
+import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -11,16 +17,25 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 
 import com.android.volley.Request;
@@ -43,13 +58,28 @@ public class MainActivity extends AppCompatActivity {
     String imageURL;
     ImageView imageView;
     String imageResult;
+    ArrayList<ObjectLabelClass> furnitureList;
     ObjectLabelClass[] objectsDetecteds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CheckAndAskPermisions();
         setContentView(R.layout.activity_main);
         imageView = findViewById(R.id.imageView);
+    }
+
+    private void CheckAndAskPermisions(){
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+
+            System.out.println("Error en los permisos de cámara");
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+
+            } else {
+                ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 10);
+            }
+
+        }
     }
 
     @Override
@@ -75,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void OpenCamera(View view) {
+
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, CAMERA_REQUEST);
     }
@@ -86,25 +117,39 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == CAMERA_REQUEST) {
 
             imageView.setVisibility(View.VISIBLE);
-            //Uri imag = data.getData();
-            // imageView.setImageURI(imag);
             Bitmap bitmap = (Bitmap) data.getExtras().get("data");
             imageView.setImageBitmap(bitmap);
             imageView.bringToFront();
+
+            authorizationImgur();
+
             //send image to API
             //get result
             imageURL = "https://demo.restb.ai/images/demo/demo-2.jpg";
             imageResult();
-
-
-
         }
+    }
+
+    private void authorizationImgur() {
+        RequestQueue mQueue = Volley.newRequestQueue(this);
+        String endpoint = "https://api.imgur.com/oauth2/authorize";
+        String clientId = "5491201f230a7da";
+        Authentication auth = new Authentication(endpoint);
+        auth.putHead("response_type", "token");
+        auth.putHead("client_id", clientId);
+        JsonObjectRequest request = auth.request(Request.Method.POST, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                System.out.println("AUTHENTICATIOOOOOOOOOOOOOOOOOOOOOOOON");
+            }
+        });
+        mQueue.add(request);
     }
 
     // devuelve dummy para pruebas
     void imageResult() {
 
-        final ArrayList<ObjectLabelClass> furnitureList = new ArrayList<>();
+        furnitureList = new ArrayList<>();
 
 
         RequestQueue mQueue = Volley.newRequestQueue(this);
@@ -128,9 +173,12 @@ public class MainActivity extends AppCompatActivity {
                         int length = imageJArray.length();
 
                         LinearLayout lay = (LinearLayout) findViewById(R.id.buttonslayouts);
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT);
-
-
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(CoordinatorLayout.LayoutParams.WRAP_CONTENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT);
+                        Display display = getWindowManager().getDefaultDisplay();
+                        Point size = new Point();
+                        display.getSize(size);
+                        int width = size.x;
+                        int height = size.y;
                         for (int i = 0; i < length; i++) {
                             JSONObject tempObject = (JSONObject) imageJArray.get(i);
                             JSONObject tempObjectPoint = tempObject.getJSONObject("center_point");
@@ -143,10 +191,14 @@ public class MainActivity extends AppCompatActivity {
                             Button button = new Button(getApplicationContext());
                             button.setLayoutParams(lp);
                             button.setText(objLabelClass.Name);
+                            button.setId(i);
                             button.setOnClickListener(new ButtonsOnClickListener());
+                            button.setBackgroundColor(Color.RED);
+                            button.setX(objLabelClass.Position_X*width);
+                            button.setY(objLabelClass.Position_Y*height);
                             lay.addView(button);
-
                         }
+                        lay.bringToFront();
 
 
                     } catch (JSONException e) {
@@ -175,10 +227,34 @@ public class MainActivity extends AppCompatActivity {
 
     class ButtonsOnClickListener implements View.OnClickListener {
 
+        private PopupWindow mPopupWindow;
         @Override
         public void onClick(View v) {
-            // SE ABRIRIA EL POPUP CON EL SHIPPING
+            System.out.println("Boton pulsado");
+            int buttonId = v.getId();
+            ObjectLabelClass selectedObject = furnitureList.get(buttonId);
+            LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+
+            // Inflate the custom layout/view
+            View customView = inflater.inflate(R.layout.popup_layout,null);
+            mPopupWindow = new PopupWindow(customView,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT);
+            ImageButton closeButton = (ImageButton) customView.findViewById(R.id.ib_close);
+
+            // Set a click listener for the popup window close button
+            closeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Dismiss the popup window
+                    mPopupWindow.dismiss();
+                }
+            });
+            mPopupWindow.showAtLocation(imageView, Gravity.CENTER, 0, 0);
+            customView.bringToFront();
         }
     }
+
+
 
 }
