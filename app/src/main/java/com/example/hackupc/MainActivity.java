@@ -35,6 +35,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST = 9999;
@@ -102,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
     // devuelve dummy para pruebas
     void imageResult() {
 
+        final ArrayList<ObjectLabelClass> furnitureList = new ArrayList<>();
+
 
         RequestQueue mQueue = Volley.newRequestQueue(this);
 
@@ -119,26 +123,26 @@ public class MainActivity extends AppCompatActivity {
                 if (imageResult != null) {
                     try {
 
-                        JSONObject imageJObject = new JSONObject(imageURL);
-                        imageJObject = imageJObject.getJSONObject("response");
-                        imageJObject = imageJObject.getJSONObject("solution");
-                        imageJObject = imageJObject.getJSONObject("re_features_v3");
-                        imageJObject = imageJObject.getJSONObject("response");
-                        JSONArray imageJArray = imageJObject.optJSONArray("detections");
+                        JSONArray imageJArray = getImageJArray();
+
                         int length = imageJArray.length();
-                        LinearLayout lay = (LinearLayout) findViewById(R.id.layoutbutton);
+
+                        LinearLayout lay = (LinearLayout) findViewById(R.id.buttonslayouts);
                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT);
+
+
                         for (int i = 0; i < length; i++) {
                             JSONObject tempObject = (JSONObject) imageJArray.get(i);
                             JSONObject tempObjectPoint = tempObject.getJSONObject("center_point");
-                            objectsDetecteds[i] = new ObjectLabelClass(i, tempObject.getString("label"),
+                            ObjectLabelClass objLabelClass = new ObjectLabelClass(i, tempObject.getString("label"),
                                     Float.parseFloat(tempObjectPoint.getString("x")), Float.parseFloat(tempObjectPoint.getString("y")));
 
-                            System.out.println(objectsDetecteds[i].Name);
+                            furnitureList.add(objLabelClass);
+                            System.out.println(objLabelClass.Name);
                             // get base content a saber si funca y se printan los botones...
-                            Button button = new Button(getBaseContext());
+                            Button button = new Button(getApplicationContext());
                             button.setLayoutParams(lp);
-                            button.setText(objectsDetecteds[i].Name);
+                            button.setText(objLabelClass.Name);
                             button.setOnClickListener(new ButtonsOnClickListener());
                             lay.addView(button);
 
@@ -153,12 +157,20 @@ public class MainActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEH");
+
                 Log.e("Rest response", error.toString());
             }
         });
         mQueue.add(request);
 
+    }
+
+    private JSONArray getImageJArray() throws JSONException {
+        JSONObject imageJObject = new JSONObject(imageResult);
+        imageJObject = imageJObject.getJSONObject("response");
+        imageJObject = imageJObject.getJSONObject("solutions");
+        imageJObject = imageJObject.getJSONObject("re_appliances");
+        return imageJObject.optJSONArray("detections");
     }
 
     class ButtonsOnClickListener implements View.OnClickListener {
