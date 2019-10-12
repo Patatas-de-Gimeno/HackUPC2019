@@ -4,18 +4,13 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textSize="27dp"
-        android:text="Saca una foto con tu móvil para comenzar"
-        android:gravity="center"/>
-    <ImageView
 
+
+
+    <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_anchor="@+id/imageView"
-        app:layout_anchorGravity="center"/>
+        app:srcCompat="@android:drawable/screen_background_light_transparent" />
 
 </LinearLayout>

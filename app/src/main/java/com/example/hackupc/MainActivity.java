@@ -10,16 +10,17 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import android.provider.MediaStore;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 
 import com.android.volley.Request;
@@ -30,26 +31,23 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST = 9999;
+    String imageURL;
     ImageView imageView;
+    String imageResult;
+    ObjectLabelClass[] objectsDetecteds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        imageView = (ImageView) findViewById(R.id.imageView);
+        imageView = findViewById(R.id.imageView);
     }
 
     @Override
@@ -84,104 +82,91 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_REQUEST) {
+
+            imageView.setVisibility(View.VISIBLE);
+            //Uri imag = data.getData();
+            // imageView.setImageURI(imag);
             Bitmap bitmap = (Bitmap) data.getExtras().get("data");
             imageView.setImageBitmap(bitmap);
             imageView.bringToFront();
             //send image to API
             //get result
-            String url = imageResult("");
+            imageURL = "https://demo.restb.ai/images/demo/demo-2.jpg";
+            imageResult();
 
-          /* try {
 
-                result = imageResult();
-                result = result.getJSONObject("response");
-                result = result.getJSONObject("solutions");
-                result = result.getJSONObject("re_features_v3");
-                resultArray = result.getJSONArray("detections");
-                int length = resultArray.length();
-                JSONObject tempPoint = null;
-                JSONObject temp = null;
-                String[][] resultData = new String[length][3];
-                for (int i = 0; i < length ; i++) {
-                    temp = (JSONObject) resultArray.get(i);
-                    tempPoint = temp.getJSONObject("center_point");
-                    resultData[i][0] = temp.getString("label");
-                    resultData[i][1] = tempPoint.getString("y");
-                    resultData[i][2] = tempPoint.getString("x");
 
-                }
-
-            } catch (JSONException e) {
-            }*/
-
-            //print cuadrados
         }
     }
 
     // devuelve dummy para pruebas
-    public String imageResult(String url) {
+    void imageResult() {
 
 
-            RequestQueue mQueue = Volley.newRequestQueue(this);
+        RequestQueue mQueue = Volley.newRequestQueue(this);
 
 
+        String clientKey = "f59efc7d6b2dc753e9d803d64d4eb30981174252cc6b1d2c1a43fe2a4feedd67";
+        String modelID = "re_appliances";
 
-            String clientKey = "f59efc7d6b2dc753e9d803d64d4eb30981174252cc6b1d2c1a43fe2a4feedd67";
-            String modelID ="re_appliances";
-            String imageURL="https://demo.restb.ai/images/demo/demo-2.jpg";
+        String getURL = "https://api-eu.restb.ai/vision/v2/predict?client_key=" + clientKey + "&model_id=" + modelID + "&image_url=" + imageURL;
 
-            String getURL = "https://api-eu.restb.ai/vision/v2/predict?client_key=" + clientKey + "&model_id=" + modelID + "&image_url=" + imageURL;
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, getURL, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.e("RestResponse", response.toString());
+                imageResult = response.toString();
+                if (imageResult != null) {
+                    try {
 
-            JsonObjectRequest request = new com.android.volley.toolbox.JsonObjectRequest(Request.Method.GET, getURL, null, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    Log.e("RestResponse", response.toString());
+                        JSONObject imageJObject = new JSONObject(imageURL);
+                        imageJObject = imageJObject.getJSONObject("response");
+                        imageJObject = imageJObject.getJSONObject("solution");
+                        imageJObject = imageJObject.getJSONObject("re_features_v3");
+                        imageJObject = imageJObject.getJSONObject("response");
+                        JSONArray imageJArray = imageJObject.optJSONArray("detections");
+                        int length = imageJArray.length();
+                        LinearLayout lay = (LinearLayout) findViewById(R.id.layoutbutton);
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT);
+                        for (int i = 0; i < length; i++) {
+                            JSONObject tempObject = (JSONObject) imageJArray.get(i);
+                            JSONObject tempObjectPoint = tempObject.getJSONObject("center_point");
+                            objectsDetecteds[i] = new ObjectLabelClass(i, tempObject.getString("label"),
+                                    Float.parseFloat(tempObjectPoint.getString("x")), Float.parseFloat(tempObjectPoint.getString("y")));
+
+                            System.out.println(objectsDetecteds[i].Name);
+                            // get base content a saber si funca y se printan los botones...
+                            Button button = new Button(getBaseContext());
+                            button.setLayoutParams(lp);
+                            button.setText(objectsDetecteds[i].Name);
+                            button.setOnClickListener(new ButtonsOnClickListener());
+                            lay.addView(button);
+
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEH");
-                    Log.e("Rest response", error.toString());
-                }
-            });
-            mQueue.add(request);
-
-
-
-/*            params.put("model_id", "re_appliances"); // set userId its a sample here
-            params.put("image_url", "https://demo.restb.ai/images/demo/demo-2.jpg"); // set userId its a sample here
-            params.put("client_key", "f59efc7d6b2dc753e9d803d64d4eb30981174252cc6b1d2c1a43fe2a4feedd67"); // set userId its a sample here
-            for (Map.Entry<String, String> param : params.entrySet()) {
-                if (requestData.length() != 0) {
-                    requestData.append('&');
-                }
-                // Encode the parameter based on the parameter map we've defined
-                // and append the values from the map to form a single parameter
-                requestData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-                requestData.append('=');
-                requestData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
             }
-            byte[] requestDataByes = requestData.toString().getBytes("UTF-8");
-
-
-            int responseCode = conection.getResponseCode();
-
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(conection.getInputStream()));
-                StringBuffer response = new StringBuffer();
-                while ((readLine = in.readLine()) != null) {
-                    response.append(readLine);
-                }
-                in.close();
-                String jsonResponse = response.toString();
-                return jsonResponse;
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEH");
+                Log.e("Rest response", error.toString());
             }
-            return null;
-*/
-return null;
+        });
+        mQueue.add(request);
 
+    }
 
+    class ButtonsOnClickListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            // SE ABRIRIA EL POPUP CON EL SHIPPING
+        }
     }
 
 }
