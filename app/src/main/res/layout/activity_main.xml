@@ -6,45 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
 
-    </com.google.android.material.appbar.AppBarLayout>
 
     <include
-        android:id="@+id/include2"
-        layout="@layout/content_main"
-        app:layout_anchor="@+id/imageView"
-        app:layout_anchorGravity="bottom|center" />
+        android:id="@+id/imageViewOnMain"
+        layout="@layout/activity_printimage"
+        app:layout_anchor="@+id/imageView"/>
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <include
+        android:id="@+id/footer"
+        layout="@layout/activity_footer"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:layout_anchor="@+id/include2"
-        app:layout_anchorGravity="bottom|center"
-        app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-    <Button
-        android:id="@+id/btnCamera"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="26dp"
-        android:text="@string/opencamera"
-        android:textAllCaps="false"
-        android:onClick="OpenCamera"
-        app:layout_anchor="@+id/toolbar"
-        app:layout_anchorGravity="center" />
+        android:layout_alignParentBottom="false"
+        android:layout_gravity="bottom" />
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="match_parent"
-        android:layout_height="355dp"
-        app:layout_anchor="@+id/imageView"
-        app:layout_anchorGravity="center"
-        app:srcCompat="@mipmap/ic_launcher" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
