@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
 
 import android.provider.MediaStore;
 import android.util.Log;
@@ -36,6 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -162,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mQueue.add(request);
-
+        authorizationImgur();
     }
 
     private JSONArray getImageJArray() throws JSONException {
@@ -179,6 +181,52 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             // SE ABRIRIA EL POPUP CON EL SHIPPING
         }
+    }
+
+    public void authorizationImgur() {
+        RequestQueue mQueue = Volley.newRequestQueue(this);
+
+        String endpoint = "https://api.imgur.com/oauth2/authorize";
+        String clientId = "5491201f230a7da";
+        String clientSecret = "62bc646c4c06210cdf3a54de8206e9e5727c8331";
+
+        HashMap<String, String> hashM = new HashMap<>();
+        hashM.put("response_type", "token");
+        hashM.put("client_id", clientId);
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, endpoint, new JSONObject(hashM), new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                System.out.println("DOOOOOOOOOOOOOOOOOOOOOOOOOOOOONE!");
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("Rest Response", error.toString());
+
+            }
+        });
+        mQueue.add(request);
+    }
+
+    public void uploadImage(String path) {
+        String url = "https://api.imgur.com/3/image";
+        RequestQueue mQueue = Volley.newRequestQueue(this);
+        HashMap<String, String> hashM = new HashMap<>();
+        hashM.put("image", url);
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, new JSONObject(hashM), new Response.Listener<JSONObject>(){
+            @Override
+            public void onResponse(JSONObject response) {
+                System.out.println("DOOOOOOOOOOOOOOOOOOOOOOOOOOOOONE!");
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("Rest Response", error.toString());
+            }
+        });
+        mQueue.add(request);
+
     }
 
 }
