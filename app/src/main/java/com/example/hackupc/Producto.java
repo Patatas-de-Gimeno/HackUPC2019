@@ -6,11 +6,14 @@ public class Producto {
     private String id;
     private String name;
     private String price;
+    private String url;
     private String type;
-    public Producto(String name, String price, String type) {
+
+    public Producto(String name, String price, String type, String url) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.price = price;
+        this.url = url;
         this.type = type;
     }
 
@@ -20,6 +23,10 @@ public class Producto {
 
     public String getId() {
         return id;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public String getName() {
