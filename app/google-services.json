@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "357381574275",
+    "firebase_url": "https://hackupc-pdg.firebaseio.com",
+    "project_id": "hackupc-pdg",
+    "storage_bucket": "hackupc-pdg.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:357381574275:android:eac8296db642d4c5ee55b6",
+        "android_client_info": {
+          "package_name": "com.example.hackupc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "357381574275-c8nmmsudnta82pa90jhrvngtr9ivgqbp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hackupc",
+            "certificate_hash": "8d026a533b68736fc619a19841cc93818abc81b7"
+          }
+        },
+        {
+          "client_id": "357381574275-9venf9kffq0d5l8e566su5053ia06o1m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWBYuvh39Kovv98-R53OsTc8cD0ptg3iE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "357381574275-9venf9kffq0d5l8e566su5053ia06o1m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

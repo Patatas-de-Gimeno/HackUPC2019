@@ -5,21 +5,11 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-
 import android.graphics.Color;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -29,14 +19,22 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -44,25 +42,19 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -84,10 +76,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         imageView = findViewById(R.id.imageView);
         mStorageRef = FirebaseStorage.getInstance().getReference();
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("")
-                .requestEmail()
-                .build();
+      //  GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+      //          .requestIdToken("")
+       //         .requestEmail()
+        //        .build();
     }
 
     private void CheckAndAskPermisions(){
@@ -433,7 +425,7 @@ public class MainActivity extends AppCompatActivity {
         imageJObject = imageJObject.getJSONObject("re_appliances");
         return imageJObject.optJSONArray("detections");
     }
-
+// Accion al abrir un boton de objeto: muestra la lista de productos.
     class ButtonsOnClickListener implements View.OnClickListener {
 
         private PopupWindow mPopupWindow;
@@ -459,8 +451,14 @@ public class MainActivity extends AppCompatActivity {
                     mPopupWindow.dismiss();
                 }
             });
-            mPopupWindow.showAtLocation(imageView, Gravity.CENTER, 0, 0);
+            TextView titleList = customView.findViewById(R.id.titlelist);
+            titleList.setText("Lista de productos");
+            mPopupWindow.showAtLocation(imageView, Gravity.TOP, 0, 0);
             customView.bringToFront();
+            ArrayList<Producto> list = DataProductos.ReturnData(selectedObject.Name);
+            ListView mListView = (ListView) customView.findViewById(R.id.lista_productos);
+            ProductoListAdapter adapter = new ProductoListAdapter(customView.getContext(), R.layout.rowproducts, list);
+            mListView.setAdapter(adapter);
         }
     }
 
